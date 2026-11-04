@@ -4,6 +4,7 @@ public class SplitMate {
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
         ArrayList<Participant> participants = new ArrayList<>();
+        ArrayList<Expense> expenses = new ArrayList<>();
         String choice;
         do {
             displayMenu();
@@ -16,7 +17,7 @@ public class SplitMate {
                     viewParticipants(participants);
                     break;
                 case "3":
-                    System.out.println("This feature is coming soon.");
+                    ExpenseManager.addExpense(input, expenses);
                     break;
                 case "0":
                     System.out.println("Goodbye!");
