@@ -9,7 +9,7 @@ public class ExpenseManager {
         input.nextLine();
         System.out.println("Enter date: ");
         String date = input.nextLine();
-        System.out.print("Enter payerId");
+        System.out.print("Enter payerId: ");
         int payerId = input.nextInt();
         input.nextLine();
         Expense expense = new Expense(name, amount, payerId, date);
