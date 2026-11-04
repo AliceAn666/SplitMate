@@ -15,4 +15,17 @@ public class ExpenseManager {
         Expense expense = new Expense(name, amount, payerId, date);
         expenses.add(expense);
     }
+    public static void viewExpense(ArrayList<Expense> expenses){
+        if(expenses.isEmpty()){
+            System.out.println("There are no expenses to view");
+            return;
+        }
+        for(Expense expense: expenses){
+            System.out.println("Name: " + expense.getDescription());
+            System.out.println("Amount: " + expense.getAmount());
+            System.out.println("Date: " + expense.getDate());
+            System.out.println("Payer ID: " + expense.getPayerId());
+            System.out.println();
+        }
+    }
 }

@@ -15,7 +15,7 @@ public class Expense {
     public double getAmount() {
         return amount;
     }
-    public int getId(){
+    public int getPayerId(){
         return payerId;
     }
     public String getDate(){
