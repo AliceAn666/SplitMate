@@ -1,7 +1,3 @@
-//Qiu, Lianqiu
-//CIS 35A
-//Project: SplitMate
-//Participant informat
 public class Participant {
     private int id;
     private String name;
