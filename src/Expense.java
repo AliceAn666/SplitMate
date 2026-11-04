@@ -1,11 +1,11 @@
 public class Expense {
     private String description;
     private double amount;
-    private int Id;
-    public Expense(String description, double amount, int Id) {
+    private int payerId;
+    public Expense(String description, double amount, int payerId) {
         this.description = description;
         this.amount = amount;
-        this.Id = Id;
+        this.payerId = payerId;
     }
     public String getDescription() {
         return description;
@@ -14,6 +14,6 @@ public class Expense {
         return amount;
     }
     public int getId(){
-        return Id;
+        return payerId;
     }
 }
