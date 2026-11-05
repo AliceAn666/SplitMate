@@ -19,6 +19,9 @@ public class SplitMate {
                 case "3":
                     ExpenseManager.addExpense(input, expenses);
                     break;
+                case "4":
+                    ExpenseManager.viewExpense(expenses);
+                    break;
                 case "0":
                     System.out.println("Goodbye!");
                     break;
@@ -28,14 +31,15 @@ public class SplitMate {
         }while (!choice.equals("0")); 
         input.close();
     }
-    public static void displayMenu() {
-        System.out.println("\n===== SplitMate =====");
-        System.out.println("1. Add participant");
-        System.out.println("2. View participants");
-        System.out.println("3. Add expense");
-        System.out.println("0. Exit");
-        System.out.print("Enter your choise: ");
-    }
+        public static void displayMenu() {
+            System.out.println("\n===== SplitMate =====");
+            System.out.println("1. Add participant");
+            System.out.println("2. View participants");
+            System.out.println("3. Add expense");
+            System.out.println("4. View expenses");
+            System.out.println("0. Exit");
+            System.out.print("Enter your choice: ");
+        }
     public static void addParticipant (Scanner input, ArrayList<Participant> participants) {
         System.out.print("Enter participant name: ");
         String name = input.nextLine().trim();
