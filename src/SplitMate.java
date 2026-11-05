@@ -17,10 +17,10 @@ public class SplitMate {
                     viewParticipants(participants);
                     break;
                 case "3":
-                    ExpenseManager.addExpense(input, expenses);
+                    ExpenseManager.addExpense(input, expenses, participants);
                     break;
                 case "4":
-                    ExpenseManager.viewExpense(expenses);
+                    ExpenseManager.viewExpense(expenses, participants);
                     break;
                 case "0":
                     System.out.println("Goodbye!");
