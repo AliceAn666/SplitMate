@@ -22,6 +22,9 @@ public class SplitMate {
                 case "4":
                     ExpenseManager.viewExpense(expenses, participants);
                     break;
+                case "5":
+                    PaymentTracker.viewPayments(participants, expenses);
+                    break;
                 case "0":
                     System.out.println("Goodbye!");
                     break;
@@ -37,6 +40,7 @@ public class SplitMate {
             System.out.println("2. View participants");
             System.out.println("3. Add expense");
             System.out.println("4. View expenses");
+            System.out.println("5. View payments");
             System.out.println("0. Exit");
             System.out.print("Enter your choice: ");
         }
