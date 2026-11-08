@@ -9,8 +9,52 @@ public class ExpenseManager {
         System.out.println("Enter the name of the expense: ");
         String name = input.nextLine();
         System.out.println("Enter amount: ");
+        if (!input.hasNextDouble()) {
+            input.next();
+            input.nextLine();
+            System.out.println("Please enter a valid number.");
+            return;
+        }
         double amount = input.nextDouble();
+        System.out.print("Enter tax amount ($): ");
+        if (!input.hasNextDouble()) {
+            input.next();
+            input.nextLine();
+            System.out.println("Please enter a valid number.");
+            return;
+        }
+        double tax = input.nextDouble();
+        System.out.print("Enter tip amount ($): ");
+        if (!input.hasNextDouble()) {
+            input.next();
+            input.nextLine();
+            System.out.println("Please enter a valid number.");
+            return;
+        }
+        double tip = input.nextDouble();
+        System.out.print("Enter discount amount ($): ");
+        if (!input.hasNextDouble()) {
+            input.next();
+            input.nextLine();
+            System.out.println("Please enter a valid number.");
+            return;
+        }
+        double discount = input.nextDouble();
         input.nextLine();
+        if (!Double.isFinite(amount) || !Double.isFinite(tax)
+            || !Double.isFinite(tip) || !Double.isFinite(discount)
+            || amount < 0 || tax < 0 || tip < 0 || discount < 0) {
+                System.out.println("Amounts cannot be negative or invalid.");
+                return;
+            }
+            if (discount > amount + tax + tip) {
+                System.out.println("Discount cannot exceed the total amount.");
+                return;
+            }
+        double total = amount + tax + tip - discount;
+        total = Math.round(total * 100) / 100.0;
+        System.out.printf("Total amount: $%.2f%n", total);
+        amount = total;
         System.out.println("Enter date: ");
         String date = input.nextLine();
         System.out.print("Enter payer name: ");
