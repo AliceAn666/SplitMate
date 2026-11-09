@@ -25,51 +25,59 @@ public class SplitMate {
                 case "5":
                     PaymentTracker.viewPayments(participants, expenses);
                     break;
+                case "6":
+                    Settlement.settlePayments(participants, expenses);
+                    break;
                 case "0":
                     System.out.println("Goodbye!");
                     break;
                 default:
                     System.out.println("Invalid choice. Please try again.");
-            } 
-        }while (!choice.equals("0")); 
+            }
+        } while (!choice.equals("0"));
         input.close();
     }
-        public static void displayMenu() {
-            System.out.println("\n===== SplitMate =====");
-            System.out.println("1. Add participant");
-            System.out.println("2. View participants");
-            System.out.println("3. Add expense");
-            System.out.println("4. View expenses");
-            System.out.println("5. View payments");
-            System.out.println("0. Exit");
-            System.out.print("Enter your choice: ");
-        }
-    public static void addParticipant (Scanner input, ArrayList<Participant> participants) {
+    public static void displayMenu() {
+        System.out.println("\n===== SplitMate =====");
+        System.out.println("1. Add participant");
+        System.out.println("2. View participants");
+        System.out.println("3. Add expense");
+        System.out.println("4. View expenses");
+        System.out.println("5. View payments");
+        System.out.println("6. Settle payments");
+        System.out.println("0. Exit");
+        System.out.print("Enter your choice: ");
+    }
+    public static void addParticipant(
+            Scanner input,
+            ArrayList<Participant> participants) {
         System.out.print("Enter participant name: ");
         String name = input.nextLine().trim();
-        if(name.isEmpty()) {
+        if (name.isEmpty()) {
             System.out.println("Name cannot be empty.");
             return;
         }
-        for (Participant person: participants){
-            if (person.getName().equalsIgnoreCase(name)){
+        for (Participant person : participants) {
+            if (person.getName().equalsIgnoreCase(name)) {
                 System.out.println("This name already exists.");
-                return; 
+                return;
             }
         }
-        int id =participants.size() + 1;
+        int id = participants.size() + 1;
         Participant person = new Participant(id, name);
         participants.add(person);
         System.out.println("Participant added: " + id + " - " + name);
     }
-    public static void viewParticipants(ArrayList<Participant> participants) {
+    public static void viewParticipants(
+            ArrayList<Participant> participants) {
         if (participants.isEmpty()) {
             System.out.println("No participants yet.");
             return;
         }
         System.out.println("\n--- Participants ---");
         for (Participant person : participants) {
-            System.out.println(person.getId() + " - " + person.getName());
+            System.out.println(
+                    person.getId() + " - " + person.getName());
         }
     }
 }
