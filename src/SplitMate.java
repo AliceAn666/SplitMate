@@ -27,6 +27,7 @@ public class SplitMate {
                     break;
                 case "6":
                     Settlement.settlePayments(participants, expenses);
+                    break;
                 case "7":
                     DataManager.saveData(participants, expenses);
                     break;
