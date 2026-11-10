@@ -27,6 +27,11 @@ public class SplitMate {
                     break;
                 case "6":
                     Settlement.settlePayments(participants, expenses);
+                case "7":
+                    DataManager.saveData(participants, expenses);
+                    break;
+                case "8":
+                    DataManager.loadData(participants, expenses);
                     break;
                 case "0":
                     System.out.println("Goodbye!");
@@ -45,6 +50,8 @@ public class SplitMate {
         System.out.println("4. View expenses");
         System.out.println("5. View payments");
         System.out.println("6. Settle payments");
+        System.out.println("7. Save data");
+        System.out.println("8. Load data");
         System.out.println("0. Exit");
         System.out.print("Enter your choice: ");
     }
@@ -63,7 +70,12 @@ public class SplitMate {
                 return;
             }
         }
-        int id = participants.size() + 1;
+        int id = 1;
+        for (Participant person : participants) {
+            if (person.getId() >= id) {
+                id = person.getId() + 1;
+            }
+        }
         Participant person = new Participant(id, name);
         participants.add(person);
         System.out.println("Participant added: " + id + " - " + name);
