@@ -1,3 +1,5 @@
+import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Scanner;
 public class ExpenseManager {
@@ -8,6 +10,205 @@ public class ExpenseManager {
     }
         System.out.println("Enter the name of the expense: ");
         String name = input.nextLine();
+        System.out.println("1. Split among all participants");
+        System.out.println("2. Split among selected participants");
+        System.out.println("3. Split by items");
+        System.out.print("Choose split type: ");
+        String choice = input.nextLine().trim();
+
+        if (choice.equals("3")) {
+            ArrayList<Integer> dinerIds = new ArrayList<>();
+            for (Participant person : participants) {
+                dinerIds.add(person.getId());
+                System.out.println(person.getId() + ". " + person.getName());
+            }
+
+            // Create one subtotal per person for the whole receipt.
+            BigDecimal[] foodTotals = new BigDecimal[dinerIds.size()];
+            Arrays.fill(foodTotals, BigDecimal.ZERO);
+            boolean[] joinedMeal = new boolean[dinerIds.size()];
+            BigDecimal[] taxableFoodTotals = new BigDecimal[dinerIds.size()];
+            Arrays.fill(taxableFoodTotals, BigDecimal.ZERO);
+
+            while (true) {
+                System.out.print("Enter item name: ");
+                String itemName = input.nextLine().trim();
+                if (itemName.isEmpty()) {
+                    System.out.println("Please enter an item name.");
+                    continue;
+                }
+
+                System.out.print("Enter item price ($): ");
+                String priceText = input.nextLine().trim();
+
+                System.out.print("Who shared this item? Enter IDs separated by commas: ");
+                String[] entries = input.nextLine().split(",", -1);
+                ArrayList<Integer> itemIds = new ArrayList<>();
+
+                try {
+                    double itemPrice = Double.parseDouble(priceText);
+                    for (String entry : entries) {
+                        itemIds.add(Integer.parseInt(entry.trim()));
+                    }
+                    BillCalculator.addItemToFoodTotals(itemPrice, itemIds, dinerIds, foodTotals);
+                    String taxable;
+                    do {
+                        System.out.print("Is this item taxable? (y/n): ");
+                        taxable = input.nextLine().trim();
+                    } while (!taxable.equalsIgnoreCase("y")
+                            && !taxable.equalsIgnoreCase("n"));
+
+                    if (taxable.equalsIgnoreCase("y")) {
+                        BillCalculator.addItemToFoodTotals(
+                                itemPrice, itemIds, dinerIds, taxableFoodTotals);
+                    }
+                } catch (IllegalArgumentException e) {
+                    System.out.println("Check the price and IDs. Please enter this item again.");
+                    continue;
+                }
+                for (int id : itemIds) {
+                    joinedMeal[dinerIds.indexOf(id)] = true;
+                }
+
+                System.out.println("Added: " + itemName);
+
+                String answer;
+                do {
+                    System.out.print("Add another item? (y/n): ");
+                    answer = input.nextLine().trim();
+                } while (!answer.equalsIgnoreCase("y") && !answer.equalsIgnoreCase("n"));
+
+                if (answer.equalsIgnoreCase("n")) {
+                    break;
+                }
+            }
+            BigDecimal[] taxShares;
+            while (true) {
+                System.out.print("Enter receipt tax ($): ");
+                String taxText = input.nextLine().trim();
+
+                if (!taxText.matches("[0-9]+(\\.[0-9]{1,2})?")) {
+                    System.out.println("Enter an amount such as 0 or 1.11.");
+                    continue;
+                }
+
+                BigDecimal receiptTax = new BigDecimal(taxText);
+                try {
+                    taxShares = BillCalculator.splitProportionally(
+                            receiptTax, taxableFoodTotals);
+                    break;
+                } catch (IllegalArgumentException e) {
+                    System.out.println("No taxable items. Enter 0 for tax.");
+                }
+            }
+            int dinerCount = 0;
+            for (boolean joined : joinedMeal) {
+                if (joined) {
+                    dinerCount++;
+                }
+            }
+
+            BigDecimal receiptTip;
+            while (true) {
+                System.out.print("Enter receipt tip ($): ");
+                String tipText = input.nextLine().trim();
+
+                if (tipText.matches("[0-9]+(\\.[0-9]{1,2})?")) {
+                    receiptTip = new BigDecimal(tipText);
+                    break;
+                }
+
+                System.out.println("Enter an amount such as 0 or 3.01.");
+            }
+
+            BigDecimal tipPerDiner = receiptTip.divide(BigDecimal.valueOf(dinerCount), java.math.MathContext.DECIMAL128);
+            BigDecimal totalFood = BigDecimal.ZERO;
+            for (BigDecimal food : foodTotals) {
+                totalFood = totalFood.add(food);
+            }
+
+            BigDecimal[] discountShares;
+            while (true) {
+                System.out.print("Enter receipt discount ($): ");
+                String discountText = input.nextLine().trim();
+
+                if (!discountText.matches("[0-9]+(\\.[0-9]{1,2})?")) {
+                    System.out.println("Enter an amount such as 0 or 1.00.");
+                    continue;
+                }
+
+                BigDecimal receiptDiscount = new BigDecimal(discountText);
+                if (receiptDiscount.compareTo(totalFood) > 0) {
+                    System.out.println("Discount cannot exceed the food subtotal.");
+                    continue;
+                }
+
+                discountShares = BillCalculator.splitProportionally(
+                        receiptDiscount, foodTotals);
+                break;
+            }
+            ArrayList<Integer> mealIds = new ArrayList<>();
+            ArrayList<BigDecimal> owedAmounts = new ArrayList<>();
+            System.out.println("Food subtotals for " + name + ":");
+            for (int i = 0; i < participants.size(); i++) {
+                BigDecimal personalTip = BigDecimal.ZERO;
+                if (joinedMeal[i]) {
+                    personalTip = tipPerDiner;
+                }
+
+                BigDecimal personalOwed = foodTotals[i]
+                        .add(taxShares[i])
+                        .add(personalTip)
+                        .subtract(discountShares[i]);
+                if (joinedMeal[i]) {
+                    mealIds.add(dinerIds.get(i));
+                    owedAmounts.add(personalOwed);
+                }
+                System.out.printf(
+                        "%s: Food $%.3f | Tax $%.3f | Tip $%.3f | Discount $%.3f | Owed $%.3f%n",
+                        participants.get(i).getName(),
+                        foodTotals[i], taxShares[i], personalTip,
+                        discountShares[i], personalOwed);
+            }
+
+            System.out.print("Enter date: ");
+            String mealDate = input.nextLine().trim();
+
+            int mealPayerId = -1;
+            while (mealPayerId == -1) {
+                System.out.print("Enter payer name: ");
+                String mealPayerName = input.nextLine().trim();
+
+                for (Participant person : participants) {
+                    if (person.getName().equalsIgnoreCase(mealPayerName)) {
+                        mealPayerId = person.getId();
+                        break;
+                    }
+                }
+
+                if (mealPayerId == -1) {
+                    System.out.println("Participant not found. Please try again.");
+                }
+            }
+
+            BigDecimal mealTotal = BigDecimal.ZERO;
+            for (BigDecimal owed : owedAmounts) {
+                mealTotal = mealTotal.add(owed);
+            }
+
+            Expense mealExpense = new Expense(
+                    name, mealTotal.setScale(2, java.math.RoundingMode.HALF_UP)
+                            .doubleValue(),
+                    mealPayerId, mealDate, mealIds, owedAmounts);
+            expenses.add(mealExpense);
+
+            System.out.printf("Expense added. Receipt total: $%.2f%n", mealTotal);
+            return;
+        }
+        if (!choice.equals("1") && !choice.equals("2")) {
+            System.out.println("Invalid choice. Expense was not added.");
+            return;
+        }
         System.out.println("Enter amount: ");
         if (!input.hasNextDouble()) {
             input.next();
@@ -71,11 +272,6 @@ public class ExpenseManager {
             return;
         }
         ArrayList<Integer> sharedIds = new ArrayList<>();
-
-        System.out.println("1. Split among all participants");
-        System.out.println("2. Split among selected participants");
-        System.out.print("Choose split type: ");
-        String choice = input.nextLine().trim();
 
         if (choice.equals("1")) {
             for (Participant person : participants) {
@@ -144,8 +340,15 @@ public class ExpenseManager {
             System.out.println("Payer: " + payerName);
             ArrayList<Integer> sharedIds = expense.getSharedIds();
 
-            long[] shares = BillCalculator.splitSharedExpense(
-                    expense.getAmount(), sharedIds);
+            ArrayList<BigDecimal> owedAmounts = expense.getOwedAmounts();
+
+            if (owedAmounts.isEmpty()) {
+                long[] shares = BillCalculator.splitSharedExpense(
+                        expense.getAmount(), sharedIds);
+                for (long share : shares) {
+                    owedAmounts.add(BigDecimal.valueOf(share, 2));
+                }
+            }
 
             for (int i = 0; i < sharedIds.size(); i++) {
                 String sharedName = "Unknown";
@@ -158,9 +361,9 @@ public class ExpenseManager {
                 }
 
                 System.out.printf(
-                        "%s owes: $%.2f%n",
+                        "%s owes: $%.3f%n",
                         sharedName,
-                        shares[i] / 100.0);
+                        owedAmounts.get(i));
             }
             System.out.println();
         }
