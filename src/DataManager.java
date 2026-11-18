@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.math.BigDecimal;
 
 public class DataManager {
 
@@ -14,7 +15,7 @@ public class DataManager {
         try (PrintWriter writer = new PrintWriter(
                 new File("splitmate.txt"), "UTF-8")) {
 
-            writer.println("SplitMate1");
+            writer.println("SplitMate2");
 
             // Save participants.
             writer.println(participants.size());
@@ -38,6 +39,15 @@ public class DataManager {
 
                 for (int id : sharedIds) {
                     writer.println(id);
+                }
+
+                // Save each person's calculated share.
+                ArrayList<BigDecimal> owedAmounts = expense.getOwedAmounts();
+
+                writer.println(owedAmounts.size());
+
+                for (BigDecimal owed : owedAmounts) {
+                    writer.println(owed.toPlainString());
                 }
             }
 
@@ -70,7 +80,10 @@ public class DataManager {
 
         try (Scanner reader = new Scanner(file, "UTF-8")) {
 
-            if (!reader.nextLine().equals("SplitMate1")) {
+            String version = reader.nextLine();
+
+            if (!version.equals("SplitMate1")
+                    && !version.equals("SplitMate2")) {
                 throw new IllegalArgumentException();
             }
 
@@ -136,8 +149,52 @@ public class DataManager {
                     sharedIds.add(id);
                 }
 
-                Expense expense = new Expense(
-                        description, amount, payerId, date, sharedIds);
+                ArrayList<BigDecimal> owedAmounts = new ArrayList<>();
+
+// New files also contain calculated shares.
+                if (version.equals("SplitMate2")) {
+                    int owedCount = Integer.parseInt(reader.nextLine());
+
+                    if (owedCount != 0 && owedCount != sharedIds.size()) {
+                        throw new IllegalArgumentException();
+                    }
+
+                    BigDecimal totalOwed = BigDecimal.ZERO;
+
+                    for (int j = 0; j < owedCount; j++) {
+                        BigDecimal owed = new BigDecimal(reader.nextLine());
+
+                        if (owed.signum() < 0) {
+                            throw new IllegalArgumentException();
+                        }
+
+                        owedAmounts.add(owed);
+                        totalOwed = totalOwed.add(owed);
+                    }
+
+                    // Check that the calculated shares match the receipt total.
+                    if (!owedAmounts.isEmpty()) {
+                        BigDecimal difference = totalOwed
+                                .subtract(BigDecimal.valueOf(amount))
+                                .abs();
+
+                        if (difference.compareTo(
+                                new BigDecimal("0.00000001")) > 0) {
+                            throw new IllegalArgumentException();
+                        }
+                    }
+                }
+
+                Expense expense;
+
+                if (owedAmounts.isEmpty()) {
+                    expense = new Expense(
+                            description, amount, payerId, date, sharedIds);
+                } else {
+                    expense = new Expense(
+                            description, amount, payerId, date,
+                            sharedIds, owedAmounts);
+                }
 
                 loadedExpenses.add(expense);
             }
