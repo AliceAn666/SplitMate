@@ -46,6 +46,11 @@ public class ExpenseManager {
                 ArrayList<Integer> itemIds = new ArrayList<>();
 
                 try {
+                    if (!priceText.matches("[0-9]+(\\.[0-9]{1,2})?")) {
+                        System.out.println("Enter a price with at most two decimal places.");
+                        continue;
+                    }
+
                     double itemPrice = Double.parseDouble(priceText);
                     for (String entry : entries) {
                         itemIds.add(Integer.parseInt(entry.trim()));
@@ -196,6 +201,12 @@ public class ExpenseManager {
                 mealTotal = mealTotal.add(owed);
             }
 
+            if (mealTotal.compareTo(new BigDecimal("1000000000")) > 0) {
+                System.out.println("Total amount cannot exceed $1,000,000,000.");
+                System.out.println("Expense was not added.");
+                return;
+            }
+
             Expense mealExpense = new Expense(
                     name, mealTotal.setScale(2, java.math.RoundingMode.HALF_UP)
                             .doubleValue(),
@@ -253,6 +264,12 @@ public class ExpenseManager {
                 return;
             }
         double total = amount + tax + tip - discount;
+
+        if (!Double.isFinite(total) || total > 1000000000) {
+            System.out.println("Total amount cannot exceed $1,000,000,000.");
+            return;
+        }
+
         total = Math.round(total * 100) / 100.0;
         System.out.printf("Total amount: $%.2f%n", total);
         amount = total;
